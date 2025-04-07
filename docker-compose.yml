@@ -1,0 +1,37 @@
+version: "3.8"  # Versão da especificação do Docker Compose utilizada
+
+services:
+    app:  # Serviço principal da aplicação Laravel
+        build:
+            context: .            # Diretório onde está localizado o Dockerfile
+            dockerfile: Dockerfile  # Nome do Dockerfile usado para buildar a imagem
+        image: laravel-app       # Nome da imagem que será criada
+        container_name: laravel_app  # Nome atribuído ao container para fácil identificação
+        volumes:
+            - .:/var/www         # Mapeia os arquivos locais para dentro do container (permite hot reload)
+        ports:
+            - "8000:8000"        # Expõe a porta 8000 do container na porta 8000 do host
+        depends_on:
+            - mysql              # Garante que o serviço MySQL seja iniciado antes do app
+        networks:
+            - laravel            # Conecta o serviço à rede 'laravel'
+
+    mysql:  # Serviço de banco de dados MySQL
+        image: mysql:8.0         # Usa a imagem oficial do MySQL na versão 8.0
+        container_name: mysql    # Nome atribuído ao container MySQL
+        restart: unless-stopped  # Reinicia o container apenas se ele for parado manualmente
+        environment:
+            MYSQL_DATABASE: laravel       # Cria automaticamente o banco de dados "laravel"
+            MYSQL_ROOT_PASSWORD: root     # Define a senha do usuário root do MySQL
+        ports:
+            - "3306:3306"        # Expõe a porta padrão do MySQL no host
+        volumes:
+            - mysql_data:/var/lib/mysql  # Volume persistente para dados do banco
+        networks:
+            - laravel            # Conecta o serviço à rede 'laravel'
+
+volumes:
+    mysql_data:  # Volume nomeado para persistência dos dados do MySQL
+
+networks:
+    laravel:  # Rede customizada para permitir comunicação entre app e banco
