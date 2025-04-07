@@ -37,6 +37,8 @@ return new class extends Migration
 
             // Valor da transferência
             $table->decimal('value', 15, 2);
+            // Chave de idempotência
+            $table->string('idempotency_key')->unique()->nullable();
 
             $table->timestamps();
         });

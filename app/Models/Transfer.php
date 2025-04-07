@@ -15,6 +15,7 @@ class Transfer extends Model
         'payee_id',
         'value',
         'type',
+        'idempotency_key',
     ];
 
     /**
@@ -39,5 +40,11 @@ class Transfer extends Model
     public function payee()
     {
         return $this->belongsTo(Account::class, 'payee_id');
+    }
+
+
+    public function findTransferByIdempotencyKey(string $key)
+    {
+        return Transfer::where('idempotency_key', $key)->first();
     }
 }

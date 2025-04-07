@@ -4,7 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Account;
 use App\Models\User;
-use App\Services\TransferService;
+use App\Services\Transfer\TransferService;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -47,6 +47,7 @@ class TransferServiceTest extends TestCase
             'payer' => $payer->id,
             'payee' => $payee->id,
             'value' => 100.00,
+            'idempotency_key' => '123456789',
         ];
 
         // Mock do cache para evitar chamadas reais

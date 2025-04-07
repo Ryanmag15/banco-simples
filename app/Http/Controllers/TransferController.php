@@ -2,71 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreTransferRequest;
-use App\Http\Requests\UpdateTransferRequest;
-use App\Models\Transfer;
-use App\Services\TransferService;
+use App\Services\Transfer\TransferService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class TransferController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreTransferRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Transfer $transfer)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Transfer $transfer)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateTransferRequest $request, Transfer $transfer)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Transfer $transfer)
-    {
-        //
-    }
-
     /**
      * Realiza uma transferência entre dois usuários.
      *
@@ -85,23 +26,21 @@ class TransferController extends Controller
      */
     public function transfer(Request $request)
     {
-        // Se quiser validar, descomente e ajuste conforme necessário
-        $request->validate([
+        $validated = $request->validate([
             'payer' => 'required|numeric|exists:users,id',
             'payee' => 'required|numeric|exists:users,id',
             'value' => 'required|numeric|min:0.01',
+            'idempotency_key' => 'required|string|max:255',
         ]);
-
-        $transferService = new TransferService();
 
         DB::beginTransaction();
         try {
-            $response = $transferService->handle($request->only(['payer', 'payee', 'value']));
+            $result = (new TransferService())->handle($validated);
             DB::commit();
-            return response()->json(['message' => 'Transferência realizada com sucesso!', 'data' => $response], 200);
-        } catch (\Exception $e) {
+            return response()->json(['message' => 'Transferência realizada com sucesso!', 'data' => $result], 200);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Erro ao realizar transferência', 'message' => $e->getMessage()], 400);
+            return response()->json(['error' => 'Erro na transferência', 'message' => $e->getMessage()], 400);
         }
     }
 }
